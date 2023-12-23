@@ -2,27 +2,33 @@ import tkinter as tk
 from tkinter import ttk
 
 columns = [
-    'Model', 'Marka', 'Fiyat', 'Vites', 'Yakıt', 'Motor Hacmi', 'Aktarma', 'Horsepower',
-    'Rehin', 'Haciz', 'Muayene', 'Yıl', 'Km', 'Kullanım Alanı', 'Renk', 'Son Hız',
-    'Bagaj Hacmi', '0-100', 'Max Tork', 'Silindir', 'Depo', 'Tüketim', 'Sübap','Hasar Bilgi'
-]
-def open_detail_page(car):
-    # Ayrı bir pencere oluştur
-    detail_window = tk.Toplevel()
-    detail_window.title("Araç Detayları")
+    'Model', 'Brand', 'Price', 'Gear', 'Fuel', 'Engine Displacement', 'Transmission', 'Horsepower', 'Mortgage',
+      'Confiscation', 'Inspection', 'Year', 'Km', 'Area of Use', 'Colour',
+      'Top Speed', 'Luggage Volume', '0-100', 'Max Torque', 'Cylinder', 'Tank', 'Consumption', 'Valve']
 
-    # Araç hakkındaki bilgileri pencereye ekle
-    for key, value in car.items():
-        label = tk.Label(detail_window, text=f"{key}: {value}")
-        label.pack()
 
-    detail_window.mainloop()
-# Verileri okuma ve filtreleme fonksiyonu
+# Data reading and filtering function
 def filter_by_year():
-    selected_year = year_var.get()  # Seçilen yılı al
+    selected_year = year_var.get()  # Get selected year
+
+   # Filter by selected year
+    filtered_cars = [car for car in data if car['yıl'] == selected_year]
+
+    # UI cleaning
+    for i in treeview.get_children():
+        treeview.delete(i)
+
+# Show filtered data in columns
+    for car in filtered_cars:
+        values = [car.get(col.replace(' ', '_').lower(), '') for col in columns]  # Get values for each column
+        treeview.insert('', 'end', values=values)  # Add to columns
+
+
+def filter_by_price():
+    selected_price = price_var.get()  # Seçilen yılı al
 
     # Seçilen yıla göre filtreleme
-    filtered_cars = [car for car in data if car['yıl'] == selected_year]
+    filtered_cars = [car for car in data if car['fiyat'] == selected_price]
 
     # UI temizleme
     for i in treeview.get_children():
@@ -31,19 +37,10 @@ def filter_by_year():
     # Filtrelenmiş verileri sütun halinde göster
     for car in filtered_cars:
         values = [car.get(col.replace(' ', '_').lower(), '') for col in columns]  # Her sütun için değerleri al
-        treeview.insert('', 'end', values=values)  # Sütunlara ekleme
-        button = ttk.Button(treeview, text="İncele", command=lambda event=None, car=car: open_detail_page(car))
-        button.grid(row=treeview.index('end'), column=12, sticky='w')
-        button.winfo_width()
-        button.winfo_height()
+        treeview.insert('', 'end', values=values)  # Sütunlara ekleme        
+      
 
-        
-        
-       
-    
-
-
-# Verileri metin dosyasından okuma ve düzgünce sözlük oluşturma
+# Reading data from text file and neatly creating dictionary
 with open('output.txt', 'r', encoding='utf-8') as file:
     lines = file.readlines()
 
@@ -54,59 +51,96 @@ for line in lines:
 
     car = {
         'model': parts[0],
-        'marka': parts[1],
-        'fiyat': parts[2],
-        'vites': parts[3],
-        'yakıt': parts[4],
-        'motor_hacmi': parts[5],
-        'aktarma': parts[6],
+        'brand': parts[1],
+        'price': parts[2],
+        'gear': parts[3],
+        'fuel': parts[4],
+        'engine_displacement': parts[5],
+        'transmission': parts[6],
         'horsepower': parts[7],
-        'rehin': parts[8],
-        'haciz': parts[9],
-        'muayene': parts[10],
-        'yıl': parts[11],
+        'mortgage': parts[8],
+        'confiscation': parts[9],
+        'inspection': parts[10],
+        'year': parts[11],
         'km': parts[12],
-        'kullanım_alanı': parts[13],
-        'renk': parts[14],
-        'son_hız': parts[15],
-        'bagaj_hacmi': parts[16],
+        'area_of_use': parts[13],
+        'colour': parts[14],
+        'top_speed': parts[15],
+        'luggage_volume': parts[16],
         '0-100': parts[17],
-        'max_tork': parts[18],
-        'silindir': parts[19],
-        'depo': parts[20],
-        'tüketim': parts[21],
-        'sübap': parts[22]
+        'max_torque': parts[18],
+        'cylinder': parts[19],
+        'tank': parts[20],
+        'consumption': parts[21],
+        'valve': parts[22]
     }
-    #print(car)  # Oluşturulan sözlükleri kontrol etmek için
+    
     data.append(car)
 
 
-# TKinter penceresi oluşturma
+# Creating a TKinter window
 root = tk.Tk()
 root.title("Araç Filtreleme")
+input_frame = tk.Frame(root)
+input_frame.pack()
+# Column headings
 
-# Sütun başlıkları
+def filter_by_year_and_price():
+    filter_by_year()
+    filter_by_price()
 
-
-# Yıl dropdown menüsü oluşturma
-years = list(set(car['yıl'] for car in data))  # Verilerden yılları al
+# Year dropdown 
+years = list(set(car['year'] for car in data)) 
 year_var = tk.StringVar(root)
-year_var.set(years[0])  # Başlangıçta ilk yılı seçili yap
+year_var.set(years[0])  # Select first year initially
 
-year_label = tk.Label(root, text="Filtreleme Yılı:")
-year_label.pack()
+year_label = tk.Label(input_frame, text="Filtering Year:")
+year_label.pack(side=tk.LEFT)
 
-year_dropdown = tk.OptionMenu(root, year_var, *years)
-year_dropdown.pack()
+year_dropdown = tk.OptionMenu(input_frame, year_var, *years)
+year_dropdown.pack(side=tk.LEFT)
 
-# Filtreleme düğmesi
-filter_button = tk.Button(root, text="Filtrele", command=filter_by_year)
-filter_button.pack()
+# Price Filtering
+price = list(set(car['price'] for car in data)) 
+price_var = tk.StringVar(root)
+price_var.set(price[0])  # Select first price initially
 
-# Veri görüntüleme widget'ı oluşturma (Treeview kullanacağız)
+price_label = tk.Label(input_frame, text="Price:")
+price_label.pack(side=tk.LEFT)
+
+price_dropdown = tk.OptionMenu(input_frame, price_var, *price)
+price_dropdown.pack(side=tk.LEFT)
+
+#Brand filtering 
+brand = list(set(car['brand'] for car in data)) 
+brand_var = tk.StringVar(root)
+brand_var.set(brand[0])  # Select first brand initially
+brand_label = tk.Label(input_frame, text="Brand:")
+brand_label.pack(side=tk.LEFT)
+
+brand_dropdown = tk.OptionMenu(input_frame, brand_var, *brand)
+brand_dropdown.pack(side=tk.LEFT)
+
+#Model filtering
+model = list(set(car['model'] for car in data)) 
+model_var = tk.StringVar(root)
+model_var.set(model[0])  # Select first model initially
+
+model_label = tk.Label(input_frame, text="Model:")
+model_label.pack(side=tk.LEFT)
+
+model_dropdown = tk.OptionMenu(input_frame, model_var, *model)
+model_dropdown.pack(side=tk.LEFT)
+
+# Filtering button
+
+filter_button = tk.Button(input_frame, text="Filter", command=filter_by_year_and_price)
+filter_button.pack(side=tk.LEFT)
+
+# Creating a data display widget (we will use Treeview)
 treeview = ttk.Treeview(root, columns=columns, show='headings')
 
-# Sütun başlıklarını ayarlama
+# Adjust column headers
 for col in columns:
     treeview.heading(col, text=col)
     
